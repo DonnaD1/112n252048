@@ -1,4 +1,5 @@
 from cmu_graphics import *
+import random
 
 def onAppStart(app): 
     app.rows=4
@@ -9,11 +10,16 @@ def onAppStart(app):
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
+    app.piecex
+    app.piecey
+    app.pieceWidth
+    app.pieceHeight
 
 def redrawAll(app):
     drawLabel('2048', 200, 30, size=16)
     drawBoard(app)
     drawBoardBorder(app)
+    drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
 
 
 def drawBoard(app):
@@ -53,5 +59,10 @@ def getPieceValue(app):
 
 def pieceCollision(app): 
     pass
+
+def onKeyPress(app): 
+    if key=='up': 
+        piece.cy+=app.pieceWidth
+        val=getPieceValue
 
 runApp()
