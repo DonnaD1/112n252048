@@ -14,6 +14,8 @@ def redrawAll(app):
     drawLabel('2048', 200, 30, size=16)
     drawBoard(app)
     drawBoardBorder(app)
+    drawRect()
+    drawLabel(getPieceValue(app))
 
 def drawBoard(app):
     for row in range(app. rows):
@@ -22,7 +24,7 @@ def drawBoard(app):
             drawCell(app, row, col, color)
 
 def drawBoardBorder(app):
-  drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
+    drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
            fill=None, border='black',
            borderWidth=2*app.cellBorderWidth)
 
@@ -43,5 +45,12 @@ def getCellSize(app):
     cellWidth = app.boardWidth / app.cols
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
+
+def getPieceValue(app): 
+    pieceValue=2
+    if pieceCollide(app): 
+        pieceValue*=2
+    return pieceValue
+
 
 runApp()
