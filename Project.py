@@ -20,6 +20,7 @@ def redrawAll(app):
     drawBoard(app)
     drawBoardBorder(app)
     drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
+    drawRect(app.piecex, app.piecey, app.pieceWidth, app.pieceHeight, fill='color', opacity=20)
 
 
 def drawBoard(app):
@@ -55,14 +56,29 @@ def getPieceValue(app):
     pieceValue=2
     if pieceCollision(app): 
         pieceValue*=2
+    if pieceValue==2: 
+        color='beige'
+    if pieceValue==4: 
+        color='yellow'
+    if pieceValue==8: 
+        color='orange'
+    if pieceValue==16:
+        color='red'
     return pieceValue
 
 def pieceCollision(app): 
     pass
 
-def onKeyPress(app): 
+def onKeyPress(app, key): 
     if key=='up': 
         piece.cy+=app.pieceWidth
         val=getPieceValue
+    if key=='down': 
+        piece.cy+=app.pieceWidth
+    if key=='left': 
+        piece.cx+=app.pieceHeight
+    if key=='right': 
+        piece.cx+=app.pieceHeight
+
 
 runApp()
