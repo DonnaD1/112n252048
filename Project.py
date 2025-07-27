@@ -14,6 +14,7 @@ def onAppStart(app):
     app.piecey
     app.pieceWidth
     app.pieceHeight
+    app.gameOver=False
 
 def redrawAll(app):
     drawLabel('2048', 200, 30, size=16)
@@ -70,15 +71,36 @@ def pieceCollision(app):
     pass
 
 def onKeyPress(app, key): 
-    if key=='up': 
-        piece.cy+=app.pieceWidth
-        val=getPieceValue
-    if key=='down': 
-        piece.cy+=app.pieceWidth
-    if key=='left': 
-        piece.cx+=app.pieceHeight
-    if key=='right': 
-        piece.cx+=app.pieceHeight
+    if app.gameOver:
+        if key=='space':
+            onAppStart(app)
+            return 
+    if key=='left':movePiece(app, 0, -1)
+    elif key=='right':movePiece(app, 0, +1)
+    elif key=='down':movePiece(app, +1, 0)
 
+def movePiece(app, drow, dcol): 
+    app.pieceTopRow+=drow
+    app.pieceLeftCol+=dcol
+    if pieceIsLegal(app):
+        return True
+    else:
+        app.pieceTopRow-=drow
+        app.pieceLeftCol-=dcol
+        return False
+
+def pieceIsLegal(app): 
+    pieceRows, pieceCols=len(app.piece), len(app.piece[0])
+    for pieceRows in range(pieceRows):
+        for pieceCol in range(pieceCols):
+            if app.piece[pieceRows][pieceCol]:
+                boardRow=pieceRows+app.pieceTopRow
+                boardCol=pieceCol+app.pieceLeftCol
+                if ((boardRow<0) or (boardRow>=app.rows) or 
+                     (boardCol<0) or (boardCol>=app.cols)):
+                         return False
+                if app.board[boardRow][boardCol]!=None:
+                    return False
+    return True
 
 runApp()
