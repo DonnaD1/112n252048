@@ -17,14 +17,16 @@ def onAppStart(app):
     app.gameOver=False
 
 def redrawAll(app):
-    drawLabel('2048', 200, 30, size=16)
+    drawLabel(f'getGridSize(app) x getGridSize(app) 2048', 200, 30, size=16)\
+    if getGridSize(app)<2: 
+        drawLabel('Please enter a grid size larger than 1x1!')
     drawBoard(app)
     drawBoardBorder(app)
     drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
     drawRect(app.piecex, app.piecey, app.pieceWidth, app.pieceHeight, fill='color', opacity=20)
     if app.gameOver==True: 
         drawRect(0, 0, app.width, app.height, fill='white', opacity=20)
-        drawLabel('Game Over', 200, 200, size 70, bold=True, fill='red')
+        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
         drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
         
 
@@ -111,5 +113,11 @@ def pieceIsLegal(app):
                 if app.board[boardRow][boardCol]!=None:
                     return False
     return True
+def gridSize(app):
+    size=input('Enter the size of the grid: ')
+    if size>=2: 
+        app.rows=size
+        app.cols=size
+    return ('Grid size=' size)  
 
 runApp()
