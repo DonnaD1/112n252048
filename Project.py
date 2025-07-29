@@ -1,6 +1,12 @@
 from cmu_graphics import *
 import random
 
+class Board: 
+    def __init__(self, size): 
+        self.size=size
+        self.score=0
+
+
 def onAppStart(app): 
     app.rows=4
     app.cols=4
@@ -15,6 +21,20 @@ def onAppStart(app):
     app.pieceWidth
     app.pieceHeight
     app.gameOver=False
+    app.level='welcome'
+    app.board=[([None]*app.cols) for row in range(app.rows)]
+    app.pieces=0
+    app.paused=False
+
+def onStepApp(app): 
+    if app.paused: 
+        return 
+    takeStep(app)
+
+def takeStep(app):
+    if gameOver(app): 
+        return 
+    
 
 def redrawAll(app):
     drawLabel(f'getGridSize(app) x getGridSize(app) 2048', 200, 30, size=16)\
@@ -28,7 +48,14 @@ def redrawAll(app):
         drawRect(0, 0, app.width, app.height, fill='white', opacity=20)
         drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
         drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
-        
+    if app.level=='welcome': 
+        drawLabel('Welcome to 2048!')
+        drawRect('')
+        drawLabel('Start')
+
+
+def loadNextPiece(app): 
+
 
 def drawBoard(app):
     for row in range(app. rows):
@@ -89,6 +116,8 @@ def onKeyPress(app, key):
         movePiece(app, +1, 0)
     elif key=='up': 
         movePiece(app, -1, 0)
+    elif key=='space': 
+        app.paused=True
 
 def movePiece(app, drow, dcol): 
     app.pieceTopRow+=drow
