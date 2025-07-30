@@ -46,52 +46,13 @@ def loadPiece(app):
     if emptyCells!=[]: 
         (i, j)=random.choice(emptyCells) #learned how to use random (and with weights) from this website: https://pynative.com/python-weighted-random-choices-with-probability/
         valList=[2, 4]
-        tileVal=random.choices(valList, weights=(80, 20), k=1)  
+        tileVal=random.choices(valList, weights=(80, 20), k=1)[0]  
         app.board[i][j]=tileVal
-
-
-
-    # app.piecex
-    # app.piecey
-    # app.pieceWidth
-    # app.pieceHeight
-    # app.gameOver=False
-    # app.level='welcome'
-    # app.board=[([None]*app.cols) for row in range(app.rows)]
-    # app.pieces=0
-    # app.paused=False
-
-# def onStepApp(app): 
-#     if app.paused: 
-#         return 
-#     takeStep(app)
-
-# def takeStep(app):
-#     if gameOver(app): 
-#         return 
-    
-
+  
 def redrawAll(app):
-    # drawLabel(f'getGridSize(app) x getGridSize(app) 2048', 200, 30, size=16)\
-    # if getGridSize(app)<2: 
-    #     drawLabel('Please enter a grid size larger than 1x1!')
     drawBoard(app)
     drawBoardBorder(app)
     drawLabel('2048', 200, 30, size=16)
-    # drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
-    # drawRect(app.piecex, app.piecey, app.pieceWidth, app.pieceHeight, fill='color', opacity=20)
-    # if app.gameOver==True: 
-    #     drawRect(0, 0, app.width, app.height, fill='white', opacity=20)
-    #     drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
-    #     drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
-    # if app.level=='welcome': 
-    #     drawLabel('Welcome to 2048!')
-    #     drawRect('')
-    #     drawLabel('Start')
-
-
-# def loadNextPiece(app): 
-
 
 def drawBoard(app):
     for row in range(app. rows):
@@ -103,24 +64,24 @@ def drawBoardBorder(app):
     drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
            fill=None, border='black',
            borderWidth=2*app.cellBorderWidth)
-#app.width/2, app.height/2, app.width-200, app.height-200
+
 def drawCell(app, row, col, value):
     cellLeft, cellTop = getCellLeftTop(app, row, col)
     cellWidth, cellHeight = getCellSize(app)
     if value==None: 
         color='lightGray'
         opacity=100
-        value=''
+        num=''
     else: 
-        value=value[0]
         color=app.valueColor[value][0]
         opacity=app.valueColor[value][1]
+        num=value
     drawRect(cellLeft, cellTop, cellWidth, cellHeight,
              fill=color, border='black',
              borderWidth=app.cellBorderWidth, 
              opacity=opacity)
     if value!='': 
-        drawLabel((str(value)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
+        drawLabel((str(num)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
     
 
 def getCellLeftTop(app, row, col):
@@ -134,32 +95,17 @@ def getCellSize(app):
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
-# def getPieceValue(app): 
-#     pieceValue=2
-#     if pieceCollision(app): 
-#         pieceValue*=2
-#     if pieceValue==2: 
-#         color='beige'
-#     if pieceValue==4: 
-#         color='yellow'
-#     if pieceValue==8: 
-#         color='orange'
-#     if pieceValue==16:
-#         color='red'
-#     return pieceValue
-
-# def pieceCollision(app): 
-#     pass
-
-# def onKeyPress(app, key): 
-#     if app.gameOver:
-#         if key=='space':
-#             onAppStart(app)
-#             return 
-#     if key=='left':
-#         movePiece(app, 0, -1)
-#     elif key=='right':
-#         movePiece(app, 0, +1)
+def onKeyPress(app, key): 
+    # if app.gameOver:
+    #      if key=='space':
+    #          onAppStart(app)
+    #          return 
+    if key=='left':
+        movePiecesLeft(app)
+        loadPiece(app)
+    elif key=='right':
+        movePiecesRight(app)
+        loadPiece(app)
 #     elif key=='down':
 #         movePiece(app, +1, 0)
 #     elif key=='up': 
@@ -167,34 +113,40 @@ def getCellSize(app):
 #     elif key=='space': 
 #         app.paused=True
 
-# def movePiece(app, drow, dcol): 
-#     app.pieceTopRow+=drow
-#     app.pieceLeftCol+=dcol
-#     if pieceIsLegal(app):
-#         return True
-#     else:
-#         app.pieceTopRow-=drow
-#         app.pieceLeftCol-=dcol
-#         return False
+def pieceCollisionLR(row): #piece collision function if left and right keys are pressed
+    valsInRow=[]
+    for val in row: 
+        if val is not None: 
+            valsInRow.append(val)
+    i=0
+    while i<(len(valsInRow)-1): 
+        if valsInRow[i]==valsInRow[i+1]:
+            valsInRow[i]=valsInRow[i]+valsInRow[i]
+            valsInRow[i+1]='Skip'
+            i+=2
+        else:
+            i+=1
+    collidedRow=[]
+    for val in valsInRow: 
+        if val!='Skip': 
+            collidedRow.append(val)
+    while len(collidedRow)<len(row): 
+        collidedRow.append(None)
+    return collidedRow
+    
+def movePiecesLeft(app):
+    for rowNum in range(app.rows): 
+        row=app.board[rowNum]
+        newRow=pieceCollisionLR(row) 
+        app.board[rowNum]=newRow
 
-# def pieceIsLegal(app): 
-#     pieceRows, pieceCols=len(app.piece), len(app.piece[0])
-#     for pieceRows in range(pieceRows):
-#         for pieceCol in range(pieceCols):
-#             if app.piece[pieceRows][pieceCol]:
-#                 boardRow=pieceRows+app.pieceTopRow
-#                 boardCol=pieceCol+app.pieceLeftCol
-#                 if ((boardRow<0) or (boardRow>=app.rows) or 
-#                      (boardCol<0) or (boardCol>=app.cols)):
-#                          return False
-#                 if app.board[boardRow][boardCol]!=None:
-#                     return False
-#     return True
-# def gridSize(app):
-#     size=input('Enter the size of the grid: ')
-#     if size>=2: 
-#         app.rows=size
-#         app.cols=size
-#     return ('Grid size=' size)  
+def movePiecesRight(app): 
+    for rowNum in range(app.rows):
+        row=app.board[rowNum] 
+        row.reverse()
+        newRow=pieceCollisionLR(row) 
+        newRow.reverse()
+        app.board[rowNum]=newRow
+
 
 runApp()
