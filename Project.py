@@ -1,5 +1,6 @@
 from cmu_graphics import *
 import random
+import copy
 
 ############################################################
 # Start Screen
@@ -30,43 +31,61 @@ def game_redrawAll(app):
     drawBoardBorder(app)
     drawLabel(f'Mode: {app.mode}', 200, 20, size=18)
     drawLabel(f'Moves: {app.moves}', 200, 40, size=16)
-    drawLabel(f'Highest Steps: {app.highScore}', 200, 60, size=16)
-    if app.gameOver:
-        drawLabel('Game Over! Press space to restart', 200, 200, size=20)
+    drawLabel(f'Historical Highest Steps: {app.maxMoveNum}', 200, 60, size=16)
     if app.gameOver: 
         drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
         drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
-        drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
+        drawLabel("Press 'r' to restart", 200, 240, size=30, fill='red', bold=True)
+        drawLabel(f'Historical Highest Steps: {app.maxMoveNum}', 200, 260, size=16, fill='red', bold=True)
+    if app.paused: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
+        drawLabel("Press 'space' to unpause", 200, 240, size=30, fill='red', bold=True)
 
 def game_onKeyPress(app, key):
-    if key == 'r':
-        app.maxMoveNum = max(app.maxMoveNum, app.moves)
-        setActiveScreen('start')
+    oldBoard=copy.deepcopy(app.board)
     if key=='left':
         movePiecesLeft(app)
         loadPiece(app)
+        if app.board!=oldBoard: 
+            app.moves+=1
     elif key=='right':
         movePiecesRight(app)
         loadPiece(app)
+        if app.board!=oldBoard: 
+            app.moves+=1
     elif key=='up': 
         movePiecesUp(app)
         loadPiece(app)
+        if app.board!=oldBoard: 
+            app.moves+=1
     elif key=='down':
         movePiecesDown(app)
         loadPiece(app)
+        if app.board!=oldBoard: 
+            app.moves+=1
     checkGameOver(app)
+    if app.gameOver:
+          if key=='r':
+              onAppStart(app)
+              return 
+    elif key=='space': 
+         app.paused=not(app.paused)
 
 def onAppStart(app): 
     app.rows=4
     app.cols=4
     app.boardLeft = 75
-    app.boardTop = 50
+    app.boardTop = 70
     app.boardWidth = 250
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
     app.maxMoveNum=0
+    app.mode='Regular'
+    app.moves=0
+    app.paused=False
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
@@ -150,15 +169,6 @@ def getCellSize(app):
     cellWidth = app.boardWidth / app.cols
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
-
-# def onKeyPress(app, key): 
-    # if app.gameOver:
-    #      if key=='space':
-    #          onAppStart(app)
-    #          return 
-    
-#     elif key=='space': 
-#         app.paused=True
 
 def pieceCollisionLR(row): #piece collision function if left and right keys are pressed
     valsInRow=[]
@@ -255,6 +265,10 @@ def noLegalMoves(app):
 def checkGameOver(app): 
     if noLegalMoves(app) and isBoardFull(app): 
         app.gameOver=True
+        app.maxMoveNum = max(app.maxMoveNum, app.moves)
 
+############################################################
+# Blitz Screen
+############################################################
 
 runAppWithScreens(initialScreen='start')
