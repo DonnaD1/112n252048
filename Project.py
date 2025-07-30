@@ -1,6 +1,61 @@
 from cmu_graphics import *
 import random
 
+############################################################
+# Start Screen
+############################################################
+def start_redrawAll(app): 
+    drawLabel('Welcome!', 200, 160, size=24, bold=True)
+    drawLabel(f'Highest Number of Moves: {app.maxMoveNum}', 200, 200, size=24)
+    drawLabel('Press R for Regular Mode', 200, 220, size=18)
+    drawLabel('Press B for Blitz Mode', 200, 240, size=18)
+    drawLabel('Press S for Shop', 200, 280, size=18)
+
+def start_onKeyPress(app, key):
+    if key == 'r':
+        setActiveScreen('game')
+    elif key == 'b':
+        setActiveScreen('blitz')
+    elif key == 's':
+        setActiveScreen('shop')
+
+############################################################
+# Game Screen
+############################################################
+def game_onScreenActivate(app):
+    app.moves = 0
+
+def game_redrawAll(app):
+    drawBoard(app)
+    drawBoardBorder(app)
+    drawLabel(f'Mode: {app.mode}', 200, 20, size=18)
+    drawLabel(f'Moves: {app.moves}', 200, 40, size=16)
+    drawLabel(f'Highest Steps: {app.highScore}', 200, 60, size=16)
+    if app.gameOver:
+        drawLabel('Game Over! Press space to restart', 200, 200, size=20)
+    if app.gameOver: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
+        drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
+
+def game_onKeyPress(app, key):
+    if key == 'r':
+        app.maxMoveNum = max(app.maxMoveNum, app.moves)
+        setActiveScreen('start')
+    if key=='left':
+        movePiecesLeft(app)
+        loadPiece(app)
+    elif key=='right':
+        movePiecesRight(app)
+        loadPiece(app)
+    elif key=='up': 
+        movePiecesUp(app)
+        loadPiece(app)
+    elif key=='down':
+        movePiecesDown(app)
+        loadPiece(app)
+    checkGameOver(app)
+
 def onAppStart(app): 
     app.rows=4
     app.cols=4
@@ -11,6 +66,7 @@ def onAppStart(app):
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
+    app.maxMoveNum=0
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
@@ -49,18 +105,7 @@ def loadPiece(app):
         (i, j)=random.choice(emptyCells) #learned how to use random (and with weights) from this website: https://pynative.com/python-weighted-random-choices-with-probability/
         valList=[2, 4]
         tileVal=random.choices(valList, weights=(80, 20), k=1)[0]  
-        app.board[i][j]=tileVal
-  
-def redrawAll(app):
-    drawBoard(app)
-    drawBoardBorder(app)
-    drawLabel('2048', 200, 30, size=16)
-
-    if app.gameOver: 
-        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
-        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
-        drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
-    
+        app.board[i][j]=tileVal    
 
 def drawBoard(app):
     for row in range(app. rows):
@@ -106,23 +151,12 @@ def getCellSize(app):
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
-def onKeyPress(app, key): 
+# def onKeyPress(app, key): 
     # if app.gameOver:
     #      if key=='space':
     #          onAppStart(app)
     #          return 
-    if key=='left':
-        movePiecesLeft(app)
-        loadPiece(app)
-    elif key=='right':
-        movePiecesRight(app)
-        loadPiece(app)
-    elif key=='up': 
-        movePiecesUp(app)
-        loadPiece(app)
-    elif key=='down':
-        movePiecesDown(app)
-        loadPiece(app)
+    
 #     elif key=='space': 
 #         app.paused=True
 
@@ -212,9 +246,9 @@ def isBoardFull(app):
 def noLegalMoves(app): 
     for row in range(app.rows): 
         for col in range(app.cols): 
-            if app.board[row][col]==app.board[row+1][col] and col+1<app.cols: 
+            if row+1<app.rows and app.board[row][col]==app.board[row+1][col]: 
                 return False
-            elif app.board[row][col]==app.board[row][col+1] and row+1<app.rows: 
+            elif col+1<app.cols and app.board[row][col]==app.board[row][col+1]: 
                 return False
     return True
 
@@ -223,4 +257,4 @@ def checkGameOver(app):
         app.gameOver=True
 
 
-runApp()
+runAppWithScreens(initialScreen='start')
