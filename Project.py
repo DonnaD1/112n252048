@@ -10,7 +10,9 @@ def onAppStart(app):
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
+    app.gameOver=False
     loadTileColor(app)
+    loadPiece(app)
     loadPiece(app)
 
 
@@ -54,6 +56,12 @@ def redrawAll(app):
     drawBoardBorder(app)
     drawLabel('2048', 200, 30, size=16)
 
+    if app.gameOver: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
+        drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
+    
+
 def drawBoard(app):
     for row in range(app. rows):
         for col in range(app.cols):
@@ -77,9 +85,12 @@ def drawCell(app, row, col, value):
         opacity=app.valueColor[value][1]
         num=value
     drawRect(cellLeft, cellTop, cellWidth, cellHeight,
-             fill=color, border='black',
-             borderWidth=app.cellBorderWidth, 
-             opacity=opacity)
+             fill=color, opacity=opacity)
+    drawRect(cellLeft, cellTop, cellWidth, cellHeight,
+             fill=None,
+             border='black',
+             borderWidth=app.cellBorderWidth)
+    
     if value!='': 
         drawLabel((str(num)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
     
@@ -106,10 +117,12 @@ def onKeyPress(app, key):
     elif key=='right':
         movePiecesRight(app)
         loadPiece(app)
-#     elif key=='down':
-#         movePiece(app, +1, 0)
-#     elif key=='up': 
-#         movePiece(app, -1, 0)
+    elif key=='up': 
+        movePiecesUp(app)
+        loadPiece(app)
+    elif key=='down':
+        movePiecesDown(app)
+        loadPiece(app)
 #     elif key=='space': 
 #         app.paused=True
 
@@ -147,6 +160,67 @@ def movePiecesRight(app):
         newRow=pieceCollisionLR(row) 
         newRow.reverse()
         app.board[rowNum]=newRow
+
+def pieceCollisionUD(col): 
+    valsInCol=[]
+    for val in col:
+        if val is not None: 
+            valsInCol.append(val)
+    i=0
+    while i<(len(valsInCol)-1): 
+        if valsInCol[i]==valsInCol[i+1]:
+            valsInCol[i]=valsInCol[i]+valsInCol[i]
+            valsInCol[i+1]='Skip'
+            i+=2
+        else:
+            i+=1
+    collidedCol=[]
+    for val in valsInCol: 
+        if val!='Skip': 
+            collidedCol.append(val)
+    while len(collidedCol)<len(col): 
+        collidedCol.append(None)
+    return collidedCol
+
+def movePiecesUp(app):
+    for colNum in range(app.cols): 
+        col=[]
+        for row in range(app.rows):
+            col.append(app.board[row][colNum])
+        newCol=pieceCollisionUD(col)
+        for row in range(app.rows): 
+            app.board[row][colNum]=newCol[row]
+
+def movePiecesDown(app): 
+    for colNum in range(app.cols): 
+        col=[]
+        for row in range(app.rows):
+            col.append(app.board[row][colNum])
+        col.reverse()
+        newCol=pieceCollisionUD(col)
+        newCol.reverse()
+        for row in range(app.rows): 
+            app.board[row][colNum]=newCol[row]
+
+def isBoardFull(app): 
+    for row in range(app.rows): 
+        for col in range(app.cols): 
+            if app.board[row][col]==None:
+                return False
+    return True
+    
+def noLegalMoves(app): 
+    for row in range(app.rows): 
+        for col in range(app.cols): 
+            if app.board[row][col]==app.board[row+1][col] and col+1<app.cols: 
+                return False
+            elif app.board[row][col]==app.board[row][col+1] and row+1<app.rows: 
+                return False
+    return True
+
+def checkGameOver(app): 
+    if noLegalMoves(app) and isBoardFull(app): 
+        app.gameOver=True
 
 
 runApp()
