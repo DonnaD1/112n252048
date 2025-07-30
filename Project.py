@@ -120,7 +120,7 @@ def drawCell(app, row, col, value):
              borderWidth=app.cellBorderWidth, 
              opacity=opacity)
     if value!='': 
-        drawLabel((str(value)), ((cellLeft+cellWidth)/2), ((cellTop+cellHeight)/2), size=16, bold=True)
+        drawLabel((str(value)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
     
 
 def getCellLeftTop(app, row, col):
@@ -134,67 +134,67 @@ def getCellSize(app):
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
-def getPieceValue(app): 
-    pieceValue=2
-    if pieceCollision(app): 
-        pieceValue*=2
-    if pieceValue==2: 
-        color='beige'
-    if pieceValue==4: 
-        color='yellow'
-    if pieceValue==8: 
-        color='orange'
-    if pieceValue==16:
-        color='red'
-    return pieceValue
+# def getPieceValue(app): 
+#     pieceValue=2
+#     if pieceCollision(app): 
+#         pieceValue*=2
+#     if pieceValue==2: 
+#         color='beige'
+#     if pieceValue==4: 
+#         color='yellow'
+#     if pieceValue==8: 
+#         color='orange'
+#     if pieceValue==16:
+#         color='red'
+#     return pieceValue
 
-def pieceCollision(app): 
-    pass
+# def pieceCollision(app): 
+#     pass
 
-def onKeyPress(app, key): 
-    if app.gameOver:
-        if key=='space':
-            onAppStart(app)
-            return 
-    if key=='left':
-        movePiece(app, 0, -1)
-    elif key=='right':
-        movePiece(app, 0, +1)
-    elif key=='down':
-        movePiece(app, +1, 0)
-    elif key=='up': 
-        movePiece(app, -1, 0)
-    elif key=='space': 
-        app.paused=True
+# def onKeyPress(app, key): 
+#     if app.gameOver:
+#         if key=='space':
+#             onAppStart(app)
+#             return 
+#     if key=='left':
+#         movePiece(app, 0, -1)
+#     elif key=='right':
+#         movePiece(app, 0, +1)
+#     elif key=='down':
+#         movePiece(app, +1, 0)
+#     elif key=='up': 
+#         movePiece(app, -1, 0)
+#     elif key=='space': 
+#         app.paused=True
 
-def movePiece(app, drow, dcol): 
-    app.pieceTopRow+=drow
-    app.pieceLeftCol+=dcol
-    if pieceIsLegal(app):
-        return True
-    else:
-        app.pieceTopRow-=drow
-        app.pieceLeftCol-=dcol
-        return False
+# def movePiece(app, drow, dcol): 
+#     app.pieceTopRow+=drow
+#     app.pieceLeftCol+=dcol
+#     if pieceIsLegal(app):
+#         return True
+#     else:
+#         app.pieceTopRow-=drow
+#         app.pieceLeftCol-=dcol
+#         return False
 
-def pieceIsLegal(app): 
-    pieceRows, pieceCols=len(app.piece), len(app.piece[0])
-    for pieceRows in range(pieceRows):
-        for pieceCol in range(pieceCols):
-            if app.piece[pieceRows][pieceCol]:
-                boardRow=pieceRows+app.pieceTopRow
-                boardCol=pieceCol+app.pieceLeftCol
-                if ((boardRow<0) or (boardRow>=app.rows) or 
-                     (boardCol<0) or (boardCol>=app.cols)):
-                         return False
-                if app.board[boardRow][boardCol]!=None:
-                    return False
-    return True
-def gridSize(app):
-    size=input('Enter the size of the grid: ')
-    if size>=2: 
-        app.rows=size
-        app.cols=size
-    return ('Grid size=' size)  
+# def pieceIsLegal(app): 
+#     pieceRows, pieceCols=len(app.piece), len(app.piece[0])
+#     for pieceRows in range(pieceRows):
+#         for pieceCol in range(pieceCols):
+#             if app.piece[pieceRows][pieceCol]:
+#                 boardRow=pieceRows+app.pieceTopRow
+#                 boardCol=pieceCol+app.pieceLeftCol
+#                 if ((boardRow<0) or (boardRow>=app.rows) or 
+#                      (boardCol<0) or (boardCol>=app.cols)):
+#                          return False
+#                 if app.board[boardRow][boardCol]!=None:
+#                     return False
+#     return True
+# def gridSize(app):
+#     size=input('Enter the size of the grid: ')
+#     if size>=2: 
+#         app.rows=size
+#         app.cols=size
+#     return ('Grid size=' size)  
 
 runApp()
