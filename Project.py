@@ -1,12 +1,6 @@
 from cmu_graphics import *
 import random
 
-class Board: 
-    def __init__(self, size): 
-        self.size=size
-        self.score=0
-
-
 def onAppStart(app): 
     app.rows=4
     app.cols=4
@@ -16,45 +10,87 @@ def onAppStart(app):
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
-    app.piecex
-    app.piecey
-    app.pieceWidth
-    app.pieceHeight
-    app.gameOver=False
-    app.level='welcome'
-    app.board=[([None]*app.cols) for row in range(app.rows)]
-    app.pieces=0
-    app.paused=False
+    loadTileColor(app)
+    loadPiece(app)
 
-def onStepApp(app): 
-    if app.paused: 
-        return 
-    takeStep(app)
 
-def takeStep(app):
-    if gameOver(app): 
-        return 
+def loadTileValue(app): 
+    valList=[]
+    for i in range(1, 12): 
+        value=2**i
+        valList.append(value)
+    return valList    
+
+def loadTileColor(app): 
+    app.valueColor=dict()
+    valList=loadTileValue(app)
+    for i in range(len(valList)): 
+        val=valList[i]
+        if val<=64: 
+            color='yellow'
+            opacity=15*i
+        elif val<=256: 
+            color='orange'
+            opacity=25*(i-4)
+        else: 
+            color='red'
+            opacity=30*(i-8)
+        app.valueColor[val]=[color, opacity]
+
+def loadPiece(app): 
+    emptyCells=[]
+    for i in range(app.rows): 
+        for j in range(app.cols): 
+            if app.board[i][j]==None: 
+                   emptyCells.append((i, j))
+    if emptyCells!=[]: 
+        (i, j)=random.choice(emptyCells) #learned how to use random (and with weights) from this website: https://pynative.com/python-weighted-random-choices-with-probability/
+        valList=[2, 4]
+        tileVal=random.choices(valList, weights=(80, 20), k=1)  
+        app.board[i][j]=tileVal
+
+
+
+    # app.piecex
+    # app.piecey
+    # app.pieceWidth
+    # app.pieceHeight
+    # app.gameOver=False
+    # app.level='welcome'
+    # app.board=[([None]*app.cols) for row in range(app.rows)]
+    # app.pieces=0
+    # app.paused=False
+
+# def onStepApp(app): 
+#     if app.paused: 
+#         return 
+#     takeStep(app)
+
+# def takeStep(app):
+#     if gameOver(app): 
+#         return 
     
 
 def redrawAll(app):
-    drawLabel(f'getGridSize(app) x getGridSize(app) 2048', 200, 30, size=16)\
-    if getGridSize(app)<2: 
-        drawLabel('Please enter a grid size larger than 1x1!')
+    # drawLabel(f'getGridSize(app) x getGridSize(app) 2048', 200, 30, size=16)\
+    # if getGridSize(app)<2: 
+    #     drawLabel('Please enter a grid size larger than 1x1!')
     drawBoard(app)
     drawBoardBorder(app)
-    drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
-    drawRect(app.piecex, app.piecey, app.pieceWidth, app.pieceHeight, fill='color', opacity=20)
-    if app.gameOver==True: 
-        drawRect(0, 0, app.width, app.height, fill='white', opacity=20)
-        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
-        drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
-    if app.level=='welcome': 
-        drawLabel('Welcome to 2048!')
-        drawRect('')
-        drawLabel('Start')
+    drawLabel('2048', 200, 30, size=16)
+    # drawLabel(f'getPieceValue(app)', app.piecex, app.piecey)
+    # drawRect(app.piecex, app.piecey, app.pieceWidth, app.pieceHeight, fill='color', opacity=20)
+    # if app.gameOver==True: 
+    #     drawRect(0, 0, app.width, app.height, fill='white', opacity=20)
+    #     drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
+    #     drawLabel('Press space to restart', 200, 240, size=30, fill='red', bold=True)
+    # if app.level=='welcome': 
+    #     drawLabel('Welcome to 2048!')
+    #     drawRect('')
+    #     drawLabel('Start')
 
 
-def loadNextPiece(app): 
+# def loadNextPiece(app): 
 
 
 def drawBoard(app):
@@ -68,12 +104,24 @@ def drawBoardBorder(app):
            fill=None, border='black',
            borderWidth=2*app.cellBorderWidth)
 #app.width/2, app.height/2, app.width-200, app.height-200
-def drawCell(app, row, col, color):
+def drawCell(app, row, col, value):
     cellLeft, cellTop = getCellLeftTop(app, row, col)
     cellWidth, cellHeight = getCellSize(app)
+    if value==None: 
+        color='lightGray'
+        opacity=100
+        value=''
+    else: 
+        value=value[0]
+        color=app.valueColor[value][0]
+        opacity=app.valueColor[value][1]
     drawRect(cellLeft, cellTop, cellWidth, cellHeight,
              fill=color, border='black',
-             borderWidth=app.cellBorderWidth)
+             borderWidth=app.cellBorderWidth, 
+             opacity=opacity)
+    if value!='': 
+        drawLabel((str(value)), ((cellLeft+cellWidth)/2), ((cellTop+cellHeight)/2), size=16, bold=True)
+    
 
 def getCellLeftTop(app, row, col):
     cellWidth, cellHeight = getCellSize(app)
