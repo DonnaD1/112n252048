@@ -5,7 +5,7 @@ import copy
 # Start Screen
 ############################################################
 def start_redrawAll(app): 
-    drawLabel('Welcome!', 200, 160, size=24, bold=True)
+    drawLabel('Welcome to 2048!', 200, 160, size=24, bold=True)
     drawLabel(f'Highest Score: {app.highestScore}', 200, 200, size=24)
     drawLabel('Press R for Regular Mode', 200, 220, size=18)
     drawLabel('Press B for Blitz Mode', 200, 240, size=18)
@@ -27,6 +27,8 @@ def start_onKeyPress(app, key):
 ############################################################
 def onAppStart(app): 
     app.highestScore=0
+    app.rocketsOwned=0
+    app.torpedoesOwned=0
 
 def regular_onScreenActivate(app):
     app.score=0
@@ -100,7 +102,7 @@ def regular_onMousePress(app, mouseX, mouseY):
             return 
     if app.rocketSelected:
         activateRocket(app, mouseX, mouseY)
-        app.rocketSelected = False
+        app.rocketSelected=False
     torpedoL, torpedoT, torpedoW, torpedoH=262, 400, 60, 65
     if (torpedoL<=mouseX<=torpedoL+torpedoW and
         torpedoT<=mouseY<=torpedoT+torpedoH):
@@ -113,25 +115,23 @@ def regular_onMousePress(app, mouseX, mouseY):
             return 
     if app.torpedoSelected:
         activateTorpedo(app, mouseX, mouseY)
-        app.torpedoSelected = False
+        app.torpedoSelected=False
 
 def regular_onAppStart(app): 
     app.rows=4
     app.cols=4
-    app.boardLeft = 75
-    app.boardTop = 90
-    app.boardWidth = 250
-    app.boardHeight = 300
-    app.cellBorderWidth = 2
-    app.board = [([None] * app.cols) for row in range(app.rows)]
+    app.boardLeft=75
+    app.boardTop=90
+    app.boardWidth=250
+    app.boardHeight=300
+    app.cellBorderWidth=2
+    app.board=[([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
     app.win=False
     app.mode='Regular'
     app.score=0
     app.paused=False
     app.playerMove=False
-    app.rocketsOwned=0
-    app.torpedoesOwned=0
     app.notEnoughPowerUps=False
     loadTileColor(app)
     loadPiece(app)
@@ -167,7 +167,7 @@ def loadPiece(app):
             if app.board[i][j]==None: 
                    emptyCells.append((i, j))
     if emptyCells!=[]: 
-        (i, j)=random.choice(emptyCells) #learned how to use random (and with weights) from this website: https://pynative.com/python-weighted-random-choices-with-probability/
+        (i, j)=random.choice(emptyCells) 
         valList=[2, 4]
         tileVal=random.choices(valList, weights=(80, 20), k=1)[0]  
         app.board[i][j]=tileVal    
@@ -184,8 +184,8 @@ def drawBoardBorder(app):
            borderWidth=2*app.cellBorderWidth)
 
 def drawCell(app, row, col, value):
-    cellLeft, cellTop = getCellLeftTop(app, row, col)
-    cellWidth, cellHeight = getCellSize(app)
+    cellLeft, cellTop=getCellLeftTop(app, row, col)
+    cellWidth, cellHeight=getCellSize(app)
     if value==None: 
         color='lightGray'
         opacity=100
@@ -200,19 +200,18 @@ def drawCell(app, row, col, value):
              fill=None,
              border='black',
              borderWidth=app.cellBorderWidth)
-    
     if value!='': 
         drawLabel((str(num)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
 
 def getCellLeftTop(app, row, col):
-    cellWidth, cellHeight = getCellSize(app)
-    cellLeft = app.boardLeft + col * cellWidth
-    cellTop = app.boardTop + row * cellHeight
+    cellWidth, cellHeight=getCellSize(app)
+    cellLeft=app.boardLeft + col * cellWidth
+    cellTop=app.boardTop + row * cellHeight
     return (cellLeft, cellTop)
 
 def getCellSize(app):
-    cellWidth = app.boardWidth / app.cols
-    cellHeight = app.boardHeight / app.rows
+    cellWidth=app.boardWidth / app.cols
+    cellHeight=app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
 def pieceCollisionLR(app, row): #piece collision function if left and right keys are pressed
@@ -315,7 +314,7 @@ def noLegalMoves(app):
 def checkGameOver(app): 
     if noLegalMoves(app) and isBoardFull(app): 
         app.gameOver=True
-        app.highestScore = max(app.highestScore, app.score)
+        app.highestScore=max(app.highestScore, app.score)
 
 def activateRocket(app, mouseX, mouseY): 
     for row in range(app.rows): 
@@ -326,19 +325,19 @@ def activateRocket(app, mouseX, mouseY):
                 cellTop<=mouseY<=cellTop+cellHeight):
                 rocket=Rocket(col)
                 rocket.use(app)
-                app.rocketSelected = False 
+                app.rocketSelected=False 
                 app.rocketsOwned-=1
 
 def activateTorpedo(app, mouseX, mouseY): 
     for row in range(app.rows):
         for col in range(app.cols):
-            cellLeft, cellTop = getCellLeftTop(app, row, col)
-            cellWidth, cellHeight = getCellSize(app)
+            cellLeft, cellTop=getCellLeftTop(app, row, col)
+            cellWidth, cellHeight=getCellSize(app)
             if (cellLeft <= mouseX <= cellLeft + cellWidth and
                 cellTop <= mouseY <= cellTop + cellHeight):
-                torpedoPowerUp = Torpedo(row) 
+                torpedoPowerUp=Torpedo(row) 
                 torpedoPowerUp.use(app)
-                app.torpedoSelected = False 
+                app.torpedoSelected=False 
                 app.torpedoesOwned-=1
                 return
 
@@ -347,7 +346,7 @@ def checkWin(app):
         for col in range(app.cols): 
             if app.board[row][col]==2048: 
                 app.win=True
-                app.highestScore = max(app.highestScore, app.score)
+                app.highestScore=max(app.highestScore, app.score)
     return False
 
 ############################################################
@@ -387,7 +386,7 @@ def blitz_onKeyPress(app, key):
         movePiecesDown(app)
     if app.board != oldBoard:
         loadPiece(app)
-        app.timer = 2
+        app.timer=2
     checkGameOver(app)
     if app.gameOver:
           if key=='r':
@@ -401,28 +400,21 @@ def blitz_onKeyPress(app, key):
     elif key == 's':
         setActiveScreen('shop')
 
-def blitz_onMousePress(app, mouseX, mouseY): 
-    if 0<=mouseX<=0+100 and 0<=mouseY<=0+50: 
-        setActiveScreen('start')
-    if 300<=mouseX<=300+100 and 0<=mouseY<=0+50: 
-        setActiveScreen('shop')
-
-
 def blitz_onAppStart(app): 
     app.rows=4
     app.cols=4
-    app.boardLeft = 75
-    app.boardTop = 90
-    app.boardWidth = 250
-    app.boardHeight = 300
-    app.cellBorderWidth = 2
-    app.board = [([None] * app.cols) for row in range(app.rows)]
+    app.boardLeft=75
+    app.boardTop=90
+    app.boardWidth=250
+    app.boardHeight=300
+    app.cellBorderWidth=2
+    app.board=[([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
     app.mode='Blitz'
     app.score=0
     app.paused=False
     app.stepsPerSecond=1
-    app.coins = 0
+    app.coins=0
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
