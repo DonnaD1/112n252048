@@ -13,3 +13,5 @@ For solveMoveAuto(app, move), I looked at the website: https://www.w3schools.com
 My rocket image comes from here: https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.rawpixel.com%2Fsearch%2Ftransparent%2520cartoon%2520rocket&psig=AOvVaw0hLP0YPpwKAmxDemXUUI0j&ust=1754065431478000&source=images&cd=vfe&opi=89978449&ved=0CBMQjRxqFwoTCJi34onB544DFQAAAAAdAAAAABAE
 
 My torpedo image comes from here: https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.flaticon.com%2Ffree-icon%2Ftorpedo_473413&psig=AOvVaw1GBzXXfcyIoGFAj800vKn0&ust=1754065456109000&source=images&cd=vfe&opi=89978449&ved=0CBYQjRxqFwoTCOCb5pbB544DFQAAAAAdAAAAABAL
+
+Grid functions are from Tetris
