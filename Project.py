@@ -1,7 +1,6 @@
 from cmu_graphics import *
 import random
 import copy
-
 ############################################################
 # Start Screen
 ############################################################
@@ -27,6 +26,7 @@ def start_onKeyPress(app, key):
 ############################################################
 def game_onScreenActivate(app):
     app.score=0
+    app.selectedRocket=False
 
 def game_redrawAll(app):
     drawBoard(app)
@@ -43,6 +43,7 @@ def game_redrawAll(app):
         drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
         drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
         drawLabel("Press 'space' to unpause", 200, 240, size=30, fill='red', bold=True)
+    drawImage('rocket.png', 138, 400, width=60, height=65)
 
 def game_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
@@ -107,6 +108,7 @@ def loadTileColor(app):
             opacity=30*(i-8)
         app.valueColor[val]=[color, opacity]
 
+
 def loadPiece(app): 
     emptyCells=[]
     for i in range(app.rows): 
@@ -150,7 +152,6 @@ def drawCell(app, row, col, value):
     
     if value!='': 
         drawLabel((str(num)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
-    
 
 def getCellLeftTop(app, row, col):
     cellWidth, cellHeight = getCellSize(app)
@@ -264,6 +265,33 @@ def checkGameOver(app):
         app.gameOver=True
         app.highestScore = max(app.highestScore, app.score)
 
+def game_onMousePress(app, mouseX, mouseY): 
+    rocketX, rocketY, rocketW, rocketH = 138, 400, 60, 65
+    if (rocketX<=mouseX<=rocketX+rocketW and
+        rocketY<=mouseY<= rocketY+rocketH):
+        app.rocketSelected = True
+        print("Rocket selected")
+        return      
+    if app.rocketSelected:
+        activateRocket(app, mouseX, mouseY)
+        app.rocketSelected = False
+
+
+def activateRocket(app, mouseX, mouseY): 
+    for row in range(app.rows):
+        for col in range(app.cols):
+            cellLeft, cellTop=getCellLeftTop(app, row, col)
+            cellWidth, cellHeight=getCellSize(app)
+            if (cellLeft<=mouseX<=cellLeft+cellWidth and
+                cellTop<=mouseY<=cellTop+cellHeight):
+                rocketPowerUp = rocket(col)  
+                rocketPowerUp.use(app)
+                print(f"Rocket used on column {col}")
+                app.rocketSelected = False
+                return  
+
+
+
 ############################################################
 # Blitz Screen
 ############################################################
@@ -367,8 +395,8 @@ class torpedo:
         self.row=row
 
     def use(self, app): 
-        app.board.pop(row)
+        app.board.pop(self.row)
         newRow=[None]*app.cols
         app.board.insert(0, newRow) 
 
-runAppWithScreens(initialScreen='start')
+runAppWithScreens(initialScreen='start', height=500)
