@@ -206,8 +206,8 @@ def drawCell(app, row, col, value): #from Tetris
 
 def getCellLeftTop(app, row, col): #from Tetris
     cellWidth, cellHeight=getCellSize(app)
-    cellLeft=app.boardLeft + col * cellWidth
-    cellTop=app.boardTop + row * cellHeight
+    cellLeft=app.boardLeft+col*cellWidth
+    cellTop=app.boardTop+row*cellHeight
     return (cellLeft, cellTop)
 
 def getCellSize(app): #from Tetris
@@ -334,8 +334,8 @@ def activateTorpedo(app, mouseX, mouseY):
         for col in range(app.cols):
             cellLeft, cellTop=getCellLeftTop(app, row, col)
             cellWidth, cellHeight=getCellSize(app)
-            if (cellLeft <= mouseX <= cellLeft + cellWidth and
-                cellTop <= mouseY <= cellTop + cellHeight):
+            if (cellLeft<=mouseX<=cellLeft+cellWidth and
+                cellTop<=mouseY<=cellTop+cellHeight):
                 torpedoPowerUp=Torpedo(row) 
                 torpedoPowerUp.use(app)
                 app.torpedoSelected=False 
@@ -409,7 +409,7 @@ def blitz_onAppStart(app):
     app.boardWidth=250
     app.boardHeight=300
     app.cellBorderWidth=2
-    app.board=[([None] * app.cols) for row in range(app.rows)]
+    app.board=[([None]*app.cols) for row in range(app.rows)]
     app.gameOver=False
     app.mode='Blitz'
     app.paused=False
@@ -504,7 +504,7 @@ def shop_onMousePress(app, mouseX, mouseY):
             if app.coins<100: 
                 app.notEnoughCoins=True
             else: 
-                app.rocketsOwned += 1
+                app.rocketsOwned+=1
                 app.coins -= 100
     torpedoL, torpedoT, torpedoW, torpedoH=0, 350, 100, 50
     if (torpedoL<=mouseX<=torpedoL+torpedoW and
@@ -512,7 +512,7 @@ def shop_onMousePress(app, mouseX, mouseY):
         if app.coins<100: 
                 app.notEnoughCoins=True
         else: 
-            app.torpedoesOwned += 1
+            app.torpedoesOwned+=1
             app.coins -= 100
 
 def shop_onKeyPress(app, key): 
