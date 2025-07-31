@@ -29,9 +29,9 @@ def onAppStart(app):
     app.highestScore=0
     app.rocketsOwned=0
     app.torpedoesOwned=0
+    app.score=0
 
 def regular_onScreenActivate(app):
-    app.score=0
     app.rocketSelected=False
     app.torpedoSelected=False
 
@@ -62,6 +62,8 @@ def regular_redrawAll(app):
         drawLabel('You win!', 200, 200, size=70, bold=True, fill='red')
         drawLabel("Press 'r' to restart", 200, 240, size=30, fill='red', bold=True)
         drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 260, size=16, fill='red', bold=True)
+    drawLabel('Press R to go to regular mode and S to access shop', 200, 500, size=15)
+    drawLabel('Press space to pause the game', 200, 520, size=15)
 
 def regular_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
@@ -83,10 +85,10 @@ def regular_onKeyPress(app, key):
               return 
     elif key=='space': 
          app.paused=not(app.paused)
-    if key == 'b':
+    if key=='b':
         setActiveScreen('blitz')
         app.mode='Blitz'
-    elif key == 's':
+    elif key=='s':
         setActiveScreen('shop')
 
 def regular_onMousePress(app, mouseX, mouseY):
@@ -129,7 +131,6 @@ def regular_onAppStart(app):
     app.gameOver=False
     app.win=False
     app.mode='Regular'
-    app.score=0
     app.paused=False
     app.playerMove=False
     app.notEnoughPowerUps=False
@@ -373,6 +374,8 @@ def blitz_redrawAll(app):
         drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
         drawLabel("Press 'space' to unpause", 200, 240, size=30, fill='red', bold=True)
     drawLabel(f'Time left: {app.timer}s', 200, 80, size=14)
+    drawLabel('Press R to go to regular mode', 200, 465, size=15)
+    drawLabel('Press space to pause the game', 200, 480, size=15)
 
 def blitz_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
@@ -397,8 +400,6 @@ def blitz_onKeyPress(app, key):
     if key == 'r':
         setActiveScreen('regular')
         app.mode='Regular'
-    elif key == 's':
-        setActiveScreen('shop')
 
 def blitz_onAppStart(app): 
     app.rows=4
@@ -411,7 +412,6 @@ def blitz_onAppStart(app):
     app.board=[([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
     app.mode='Blitz'
-    app.score=0
     app.paused=False
     app.stepsPerSecond=1
     app.coins=0
@@ -494,6 +494,8 @@ def shop_redrawAll(app):
     drawLabel(f'Coins: {app.coins}', 250, 450, bold=True)
     if app.notEnoughCoins: 
         drawLabel('Not enough coins!', 250, 30, size=24, bold=True)
+    drawLabel('Press R to go to regular mode', 200, 480, size=15)
+    drawLabel('Press B to go to blitz mode', 200, 500, size=15)
 
 def shop_onMousePress(app, mouseX, mouseY):
     rocketL, rocketT, rocketW, rocketH=30, 160, 100, 50
@@ -521,4 +523,4 @@ def shop_onKeyPress(app, key):
         setActiveScreen('blitz')
         app.mode='Blitz'
 
-runAppWithScreens(initialScreen='start', height=500)
+runAppWithScreens(initialScreen='start', height=550)
