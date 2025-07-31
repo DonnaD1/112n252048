@@ -26,7 +26,8 @@ def start_onKeyPress(app, key):
 ############################################################
 def game_onScreenActivate(app):
     app.score=0
-    app.selectedRocket=False
+    app.rocketSelected=False
+    app.torpedoSelected=False
 
 def game_redrawAll(app):
     drawBoard(app)
@@ -43,7 +44,10 @@ def game_redrawAll(app):
         drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
         drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
         drawLabel("Press 'space' to unpause", 200, 240, size=30, fill='red', bold=True)
-    drawImage('rocket.png', 138, 400, width=60, height=65)
+    drawLabel(f'Coins: {app.coins}', 200, 80, size=16)
+    drawImage('rocket.png', 75, 400, width=60, height=65)
+    drawImage('torpedo.png', 262, 400, width=60, height=65)
+    drawRect(0, 0, 100, 50, fill='lightGray', opacity=80)
 
 def game_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
@@ -65,6 +69,13 @@ def game_onKeyPress(app, key):
     elif key=='space': 
          app.paused=not(app.paused)
 
+def game_onMousePress(app): 
+    if 400 <= mouseX <= 490:
+        if 10 <= mouseY <= 40:
+            setActiveScreen('main')
+        elif 50 <= mouseY <= 80:
+            setActiveScreen('shop')
+
 def onAppStart(app): 
     app.rows=4
     app.cols=4
@@ -80,6 +91,8 @@ def onAppStart(app):
     app.score=0
     app.paused=False
     app.playerMove=False
+    app.rocketsOwned = 0
+    app.torpedoesOwned = 0
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
@@ -177,6 +190,7 @@ def pieceCollisionLR(app, row): #piece collision function if left and right keys
             valsInRow[i+1]='Skip'
             i+=2
             app.score+=newVal
+            app.coins+=newVal
         else:
             i+=1
     collidedRow=[]
@@ -266,31 +280,47 @@ def checkGameOver(app):
         app.highestScore = max(app.highestScore, app.score)
 
 def game_onMousePress(app, mouseX, mouseY): 
-    rocketX, rocketY, rocketW, rocketH = 138, 400, 60, 65
-    if (rocketX<=mouseX<=rocketX+rocketW and
-        rocketY<=mouseY<= rocketY+rocketH):
+    rocketL, rocketT, rocketW, rocketH=75, 400, 60, 65
+    if (rocketL<=mouseX<=rocketL+rocketW and
+        rocketT<=mouseY<=rocketT+rocketH):
         app.rocketSelected = True
         print("Rocket selected")
         return      
     if app.rocketSelected:
         activateRocket(app, mouseX, mouseY)
         app.rocketSelected = False
-
+    torpedoL, torpedoT, torpedoW, torpedoH=262, 400, 60, 65
+    if (torpedoL<=mouseX<=torpedoL+torpedoW and
+        torpedoT<=mouseY<=torpedoT+torpedoH):
+        app.torpedoSelected = True
+        print("Torpedo selected")
+        return      
+    if app.torpedoSelected:
+        activateTorpedo(app, mouseX, mouseY)
+        app.torpedoSelected = False
 
 def activateRocket(app, mouseX, mouseY): 
-    for row in range(app.rows):
+    for row in range(app.rows): 
         for col in range(app.cols):
             cellLeft, cellTop=getCellLeftTop(app, row, col)
             cellWidth, cellHeight=getCellSize(app)
             if (cellLeft<=mouseX<=cellLeft+cellWidth and
                 cellTop<=mouseY<=cellTop+cellHeight):
-                rocketPowerUp = rocket(col)  
-                rocketPowerUp.use(app)
-                print(f"Rocket used on column {col}")
-                app.rocketSelected = False
-                return  
+                rocket=Rocket(col)
+                rocket.use(app)
+                app.rocketSelected = False 
 
-
+def activateTorpedo(app, mouseX, mouseY): 
+    for row in range(app.rows):
+        for col in range(app.cols):
+            cellLeft, cellTop = getCellLeftTop(app, row, col)
+            cellWidth, cellHeight = getCellSize(app)
+            if (cellLeft <= mouseX <= cellLeft + cellWidth and
+                cellTop <= mouseY <= cellTop + cellHeight):
+                torpedoPowerUp = Torpedo(row) 
+                torpedoPowerUp.use(app)
+                print(f"Torpedo used on row {row}")
+                return
 
 ############################################################
 # Blitz Screen
@@ -325,6 +355,13 @@ def blitz_onKeyPress(app, key):
     elif key=='space': 
          app.paused=not(app.paused)
 
+def blitz_onMousePress(app): 
+    if 400 <= mouseX <= 490:
+        if 10 <= mouseY <= 40:
+            setActiveScreen('main')
+        elif 50 <= mouseY <= 80:
+            setActiveScreen('shop')
+
 def onAppStart(app): 
     app.rows=4
     app.cols=4
@@ -340,6 +377,7 @@ def onAppStart(app):
     app.score=0
     app.paused=False
     app.stepsPerSecond=1
+    app.coins = 0
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
@@ -381,7 +419,7 @@ def canMakeMove(oldBoard, newBoard):
 ############################################################
 # Power ups
 ############################################################
-class rocket: 
+class Rocket: 
     def __init__(self, col): 
         self.col=col
 
@@ -390,13 +428,51 @@ class rocket:
             app.board[row][self.col]=None
         loadPiece(app)
     
-class torpedo: 
+class Torpedo: 
     def __init__(self, row): 
         self.row=row
 
     def use(self, app): 
-        app.board.pop(self.row)
-        newRow=[None]*app.cols
-        app.board.insert(0, newRow) 
+        app.board[self.row]=[None]*app.cols
+        loadPiece(app)
+############################################################
+# Shop
+############################################################
+def shop_onScreenActivate(app):
+    app.rocketsOwned=0
+    app.torpedoesOwned=0
+    app.notEnoughCoins=False
+
+def shop_redrawAll(app): 
+    drawImage('rocket.png', 30, 40, width=100, height=120)
+    drawLabel(f'Rockets owned: {app.rocketsOwned}', 250, 110, size=20)
+    drawLabel('Rocket price: 100', 250, 130, size=20)
+    drawRect(30, 160, 100, 50, fill='yellow', opacity=60)
+    drawLabel('Buy', 80, 185, size=20)
+    drawImage('torpedo.png', 30, 230, width=100, height=120)
+    drawLabel(f'Torpedos owned: {app.torpedoesOwned}', 250, 300, size=20)
+    drawLabel('Torpedo price: 100', 250, 330, size=20)
+    drawRect(30, 350, 100, 50, fill='orange', opacity=60)
+    drawLabel('Buy', 80, 375, size=20)
+    if app.notEnoughCoins: 
+        drawLabel('Not enough coins!', 250, 30, size=24, bold=True)
+
+def shop_onMousePress(app, mouseX, mouseY):
+    rocketL, rocketT, rocketW, rocketH=30, 160, 100, 50
+    if (rocketL<=mouseX<=rocketL+rocketW and
+        rocketT<=mouseY<=rocketT+rocketH):
+            if app.coins<100: 
+                app.notEnoughCoins=True
+            else: 
+                app.rocketsOwned += 1
+                app.coins -= 100
+    torpedoL, torpedoT, torpedoW, torpedoH=0, 350, 100, 50
+    if (torpedoL<=mouseX<=torpedoL+torpedoW and
+        torpedoT<=mouseY<=torpedoT+torpedoH):
+        if app.coins<100: 
+                app.notEnoughCoins=True
+        else: 
+            app.rocketsOwned += 1
+            app.coins -= 100
 
 runAppWithScreens(initialScreen='start', height=500)
