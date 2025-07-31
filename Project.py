@@ -119,7 +119,7 @@ def regular_onMousePress(app, mouseX, mouseY):
         activateTorpedo(app, mouseX, mouseY)
         app.torpedoSelected=False
 
-def regular_onAppStart(app): 
+def regular_onAppStart(app): #some from Tetris
     app.rows=4
     app.cols=4
     app.boardLeft=75
@@ -161,7 +161,7 @@ def loadTileColor(app):
             opacity=30*(i-8)
         app.valueColor[val]=[color, opacity]
 
-def loadPiece(app): 
+def loadPiece(app): #looked at https://pynative.com/python-weighted-random-choices-with-probability/ for random function
     emptyCells=[]
     for i in range(app.rows): 
         for j in range(app.cols): 
@@ -173,18 +173,18 @@ def loadPiece(app):
         tileVal=random.choices(valList, weights=(80, 20), k=1)[0]  
         app.board[i][j]=tileVal    
 
-def drawBoard(app):
+def drawBoard(app): #from Tetris
     for row in range(app. rows):
         for col in range(app.cols):
             color=app.board[row][col]
             drawCell(app, row, col, color)
 
-def drawBoardBorder(app):
+def drawBoardBorder(app): #from Tetris
     drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
            fill=None, border='black',
            borderWidth=2*app.cellBorderWidth)
 
-def drawCell(app, row, col, value):
+def drawCell(app, row, col, value): #from Tetris
     cellLeft, cellTop=getCellLeftTop(app, row, col)
     cellWidth, cellHeight=getCellSize(app)
     if value==None: 
@@ -204,19 +204,19 @@ def drawCell(app, row, col, value):
     if value!='': 
         drawLabel((str(num)), cellLeft+cellWidth/2, cellTop+cellHeight/2, size=16, bold=True)
 
-def getCellLeftTop(app, row, col):
+def getCellLeftTop(app, row, col): #from Tetris
     cellWidth, cellHeight=getCellSize(app)
     cellLeft=app.boardLeft + col * cellWidth
     cellTop=app.boardTop + row * cellHeight
     return (cellLeft, cellTop)
 
-def getCellSize(app):
+def getCellSize(app): #from Tetris
     cellWidth=app.boardWidth / app.cols
     cellHeight=app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
 def pieceCollisionLR(app, row): #piece collision function if left and right keys are pressed
-    valsInRow=[]
+    valsInRow=[]  #looked at https://www.geeksforgeeks.org/python/2048-game-in-python/ for game logic and algorithms
     for val in row: 
         if val is not None: 
             valsInRow.append(val)
@@ -306,7 +306,7 @@ def isBoardFull(app):
 def noLegalMoves(app): 
     for row in range(app.rows): 
         for col in range(app.cols): 
-            if row+1<app.rows and app.board[row][col]==app.board[row+1][col]: 
+            if row+1<app.rows and app.board[row][col]==app.board[row+1][col]: #got help during OH for this and elif
                 return False
             elif col+1<app.cols and app.board[row][col]==app.board[row][col+1]: 
                 return False
@@ -317,7 +317,7 @@ def checkGameOver(app):
         app.gameOver=True
         app.highestScore=max(app.highestScore, app.score)
 
-def activateRocket(app, mouseX, mouseY): 
+def activateRocket(app, mouseX, mouseY): #used ChatGPT for this (specifics are in README)
     for row in range(app.rows): 
         for col in range(app.cols):
             cellLeft, cellTop=getCellLeftTop(app, row, col)
@@ -433,7 +433,7 @@ def moveAutomatically(app):
     moves=[movePiecesLeft, movePiecesRight, movePiecesUp, movePiecesDown] 
     solveMoveAuto(app, moves)
 
-def solveMoveAuto(app, moves): 
+def solveMoveAuto(app, moves): #looked at ttps://www.w3schools.com/python/ref_random_shuffle.asp
     if moves==[]: 
         app.gameOver=True
         return None
