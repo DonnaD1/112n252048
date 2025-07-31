@@ -433,7 +433,7 @@ def moveAutomatically(app):
     moves=[movePiecesLeft, movePiecesRight, movePiecesUp, movePiecesDown] 
     solveMoveAuto(app, moves)
 
-def solveMoveAuto(app, moves): #looked at ttps://www.w3schools.com/python/ref_random_shuffle.asp
+def solveMoveAuto(app, moves): #looked at ttps://www.w3schools.com/python/ref_random_shuffle.asp for random functions
     if moves==[]: 
         app.gameOver=True
         return None
