@@ -7,7 +7,7 @@ import copy
 ############################################################
 def start_redrawAll(app): 
     drawLabel('Welcome!', 200, 160, size=24, bold=True)
-    drawLabel(f'Highest Number of Moves: {app.maxMoveNum}', 200, 200, size=24)
+    drawLabel(f'Highest Number of Moves: {app.highestScore}', 200, 200, size=24)
     drawLabel('Press R for Regular Mode', 200, 220, size=18)
     drawLabel('Press B for Blitz Mode', 200, 240, size=18)
     drawLabel('Press S for Shop', 200, 280, size=18)
@@ -15,8 +15,10 @@ def start_redrawAll(app):
 def start_onKeyPress(app, key):
     if key == 'r':
         setActiveScreen('game')
+        app.mode='Regular'
     elif key == 'b':
         setActiveScreen('blitz')
+        app.mode='Blitz'
     elif key == 's':
         setActiveScreen('shop')
 
@@ -24,19 +26,19 @@ def start_onKeyPress(app, key):
 # Game Screen
 ############################################################
 def game_onScreenActivate(app):
-    app.moves = 0
+    app.score=0
 
 def game_redrawAll(app):
     drawBoard(app)
     drawBoardBorder(app)
     drawLabel(f'Mode: {app.mode}', 200, 20, size=18)
-    drawLabel(f'Moves: {app.moves}', 200, 40, size=16)
-    drawLabel(f'Historical Highest Steps: {app.maxMoveNum}', 200, 60, size=16)
+    drawLabel(f'Score: {app.score}', 200, 40, size=16)
+    drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 60, size=16)
     if app.gameOver: 
         drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
         drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
         drawLabel("Press 'r' to restart", 200, 240, size=30, fill='red', bold=True)
-        drawLabel(f'Historical Highest Steps: {app.maxMoveNum}', 200, 260, size=16, fill='red', bold=True)
+        drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 260, size=16, fill='red', bold=True)
     if app.paused: 
         drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
         drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
@@ -46,24 +48,14 @@ def game_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
     if key=='left':
         movePiecesLeft(app)
-        loadPiece(app)
-        if app.board!=oldBoard: 
-            app.moves+=1
     elif key=='right':
         movePiecesRight(app)
-        loadPiece(app)
-        if app.board!=oldBoard: 
-            app.moves+=1
-    elif key=='up': 
+    elif key=='up':
         movePiecesUp(app)
-        loadPiece(app)
-        if app.board!=oldBoard: 
-            app.moves+=1
     elif key=='down':
         movePiecesDown(app)
+    if app.board!=oldBoard:
         loadPiece(app)
-        if app.board!=oldBoard: 
-            app.moves+=1
     checkGameOver(app)
     if app.gameOver:
           if key=='r':
@@ -82,10 +74,11 @@ def onAppStart(app):
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
-    app.maxMoveNum=0
+    app.highestScore=0
     app.mode='Regular'
-    app.moves=0
+    app.score=0
     app.paused=False
+    app.playerMove=False
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
@@ -170,7 +163,7 @@ def getCellSize(app):
     cellHeight = app.boardHeight / app.rows
     return (cellWidth, cellHeight)
 
-def pieceCollisionLR(row): #piece collision function if left and right keys are pressed
+def pieceCollisionLR(app, row): #piece collision function if left and right keys are pressed
     valsInRow=[]
     for val in row: 
         if val is not None: 
@@ -178,9 +171,11 @@ def pieceCollisionLR(row): #piece collision function if left and right keys are 
     i=0
     while i<(len(valsInRow)-1): 
         if valsInRow[i]==valsInRow[i+1]:
-            valsInRow[i]=valsInRow[i]+valsInRow[i]
+            newVal=valsInRow[i]+valsInRow[i]
+            valsInRow[i]=newVal
             valsInRow[i+1]='Skip'
             i+=2
+            app.score+=newVal
         else:
             i+=1
     collidedRow=[]
@@ -194,18 +189,18 @@ def pieceCollisionLR(row): #piece collision function if left and right keys are 
 def movePiecesLeft(app):
     for rowNum in range(app.rows): 
         row=app.board[rowNum]
-        newRow=pieceCollisionLR(row) 
+        newRow=pieceCollisionLR(app, row) 
         app.board[rowNum]=newRow
 
 def movePiecesRight(app): 
     for rowNum in range(app.rows):
         row=app.board[rowNum] 
         row.reverse()
-        newRow=pieceCollisionLR(row) 
+        newRow=pieceCollisionLR(app, row) 
         newRow.reverse()
         app.board[rowNum]=newRow
 
-def pieceCollisionUD(col): 
+def pieceCollisionUD(app, col): 
     valsInCol=[]
     for val in col:
         if val is not None: 
@@ -213,9 +208,11 @@ def pieceCollisionUD(col):
     i=0
     while i<(len(valsInCol)-1): 
         if valsInCol[i]==valsInCol[i+1]:
-            valsInCol[i]=valsInCol[i]+valsInCol[i]
+            newVal=valsInCol[i]+valsInCol[i]
+            valsInCol[i]=newVal
             valsInCol[i+1]='Skip'
             i+=2
+            app.score+=newVal
         else:
             i+=1
     collidedCol=[]
@@ -231,7 +228,7 @@ def movePiecesUp(app):
         col=[]
         for row in range(app.rows):
             col.append(app.board[row][colNum])
-        newCol=pieceCollisionUD(col)
+        newCol=pieceCollisionUD(app, col)
         for row in range(app.rows): 
             app.board[row][colNum]=newCol[row]
 
@@ -241,7 +238,7 @@ def movePiecesDown(app):
         for row in range(app.rows):
             col.append(app.board[row][colNum])
         col.reverse()
-        newCol=pieceCollisionUD(col)
+        newCol=pieceCollisionUD(app, col)
         newCol.reverse()
         for row in range(app.rows): 
             app.board[row][colNum]=newCol[row]
@@ -265,10 +262,92 @@ def noLegalMoves(app):
 def checkGameOver(app): 
     if noLegalMoves(app) and isBoardFull(app): 
         app.gameOver=True
-        app.maxMoveNum = max(app.maxMoveNum, app.moves)
+        app.highestScore = max(app.highestScore, app.score)
 
 ############################################################
 # Blitz Screen
 ############################################################
+def blitz_onScreenActivate(app):
+    app.score=0
+    app.timer=2
+    app.counter=0
 
+def blitz_redrawAll(app):
+    game_redrawAll(app)
+    drawLabel(f'Time left: {app.timer}s', 200, 80, size=14)
+
+def blitz_onKeyPress(app, key):
+    oldBoard=copy.deepcopy(app.board)
+    if key=='left':
+        movePiecesLeft(app)
+    elif key=='right':
+        movePiecesRight(app)
+    elif key=='up': 
+        movePiecesUp(app)
+    elif key=='down':
+        movePiecesDown(app)
+    if app.board != oldBoard:
+        loadPiece(app)
+        app.timer = 2
+    checkGameOver(app)
+    if app.gameOver:
+          if key=='r':
+              onAppStart(app)
+              return 
+    elif key=='space': 
+         app.paused=not(app.paused)
+
+def onAppStart(app): 
+    app.rows=4
+    app.cols=4
+    app.boardLeft = 75
+    app.boardTop = 90
+    app.boardWidth = 250
+    app.boardHeight = 300
+    app.cellBorderWidth = 2
+    app.board = [([None] * app.cols) for row in range(app.rows)]
+    app.gameOver=False
+    app.highestScore=0
+    app.mode='Blitz'
+    app.score=0
+    app.paused=False
+    app.stepsPerSecond=1
+    loadTileColor(app)
+    loadPiece(app)
+    loadPiece(app)
+
+def blitz_onStep(app): 
+    if app.paused==False and app.gameOver==False: 
+        app.counter+=1
+        if app.counter>2:
+            app.counter=0
+            app.timer-=1
+        if app.timer<=0: 
+            moveAutomatically(app)
+            app.timer=2
+
+def moveAutomatically(app): 
+    moves=[movePiecesLeft, movePiecesRight, movePiecesUp, movePiecesDown] 
+    solveMoveAuto(app, moves)
+
+def solveMoveAuto(app, moves): 
+    if moves==[]: 
+        app.gameOver=True
+        return None
+    else:
+        random.shuffle(moves)
+        move=moves[0]
+        oldBoard=copy.deepcopy(app.board)
+        move(app)
+        newBoard=app.board
+        if canMakeMove(oldBoard, newBoard): 
+            loadPiece(app)
+            return True
+        else: 
+            app.board=oldBoard
+        return solveMoveAuto(app, moves[1:])
+
+def canMakeMove(oldBoard, newBoard): 
+    return newBoard!=oldBoard
+                
 runAppWithScreens(initialScreen='start')
