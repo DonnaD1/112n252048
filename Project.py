@@ -349,5 +349,26 @@ def solveMoveAuto(app, moves):
 
 def canMakeMove(oldBoard, newBoard): 
     return newBoard!=oldBoard
-                
+
+############################################################
+# Power ups
+############################################################
+class rocket: 
+    def __init__(self, col): 
+        self.col=col
+
+    def use(self, app): 
+        for row in range(app.rows): 
+            app.board[row][self.col]=None
+        loadPiece(app)
+    
+class torpedo: 
+    def __init__(self, row): 
+        self.row=row
+
+    def use(self, app): 
+        app.board.pop(row)
+        newRow=[None]*app.cols
+        app.board.insert(0, newRow) 
+
 runAppWithScreens(initialScreen='start')
