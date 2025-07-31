@@ -2,7 +2,7 @@
 
 For loadPiece(app) on line 163, I learned how to use random (and with weights) from this website: https://pynative.com/python-weighted-random-choices-with-probability/
 
-For pieceCollision(app) on line 217 (and the movePiecesLeft, movePicesRight, movePicesUp, and movePicesDown), I looked at the algorithm logic from this website: https://www.geeksforgeeks.org/python/2048-game-in-python/ but I used most of my logic as well and I did not look at their code (I only looked at the programming logic part)
+For pieceCollision(app) on line 217 (and the movePiecesLeft, movePiecesRight, movePiecesUp, and movePiecesDown), I looked at the algorithm logic from this website: https://www.geeksforgeeks.org/python/2048-game-in-python/ but I used most of my logic as well and I did not look at their code (I only looked at the programming logic part)
 
 For noLegalMoves(app) line 305, I got help during office hours for the if/elif logic 
 
