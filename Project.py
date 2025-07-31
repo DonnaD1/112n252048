@@ -6,14 +6,15 @@ import copy
 ############################################################
 def start_redrawAll(app): 
     drawLabel('Welcome!', 200, 160, size=24, bold=True)
-    drawLabel(f'Highest Number of Moves: {app.highestScore}', 200, 200, size=24)
+    drawLabel(f'Highest Score: {app.highestScore}', 200, 200, size=24)
     drawLabel('Press R for Regular Mode', 200, 220, size=18)
     drawLabel('Press B for Blitz Mode', 200, 240, size=18)
     drawLabel('Press S for Shop', 200, 280, size=18)
+    
 
 def start_onKeyPress(app, key):
     if key == 'r':
-        setActiveScreen('game')
+        setActiveScreen('regular')
         app.mode='Regular'
     elif key == 'b':
         setActiveScreen('blitz')
@@ -24,12 +25,15 @@ def start_onKeyPress(app, key):
 ############################################################
 # Game Screen
 ############################################################
-def game_onScreenActivate(app):
+def onAppStart(app): 
+    app.highestScore=0
+
+def regular_onScreenActivate(app):
     app.score=0
     app.rocketSelected=False
     app.torpedoSelected=False
 
-def game_redrawAll(app):
+def regular_redrawAll(app):
     drawBoard(app)
     drawBoardBorder(app)
     drawLabel(f'Mode: {app.mode}', 200, 20, size=18)
@@ -47,9 +51,17 @@ def game_redrawAll(app):
     drawLabel(f'Coins: {app.coins}', 200, 80, size=16)
     drawImage('rocket.png', 75, 400, width=60, height=65)
     drawImage('torpedo.png', 262, 400, width=60, height=65)
-    drawRect(0, 0, 100, 50, fill='lightGray', opacity=80)
+    drawLabel(f'{app.rocketsOwned}', 105, 475)
+    drawLabel(f'{app.torpedoesOwned}', 292, 475)
+    if app.notEnoughPowerUps: 
+        drawLabel('Not enough power ups!', 198, 475, size=16)
+    if app.win: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('You win!', 200, 200, size=70, bold=True, fill='red')
+        drawLabel("Press 'r' to restart", 200, 240, size=30, fill='red', bold=True)
+        drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 260, size=16, fill='red', bold=True)
 
-def game_onKeyPress(app, key):
+def regular_onKeyPress(app, key):
     oldBoard=copy.deepcopy(app.board)
     if key=='left':
         movePiecesLeft(app)
@@ -62,41 +74,68 @@ def game_onKeyPress(app, key):
     if app.board!=oldBoard:
         loadPiece(app)
     checkGameOver(app)
+    checkWin(app)
     if app.gameOver:
           if key=='r':
-              onAppStart(app)
+              regular_onAppStart(app)
               return 
     elif key=='space': 
          app.paused=not(app.paused)
+    if key == 'b':
+        setActiveScreen('blitz')
+        app.mode='Blitz'
+    elif key == 's':
+        setActiveScreen('shop')
 
-def game_onMousePress(app): 
-    if 400 <= mouseX <= 490:
-        if 10 <= mouseY <= 40:
-            setActiveScreen('main')
-        elif 50 <= mouseY <= 80:
-            setActiveScreen('shop')
+def regular_onMousePress(app, mouseX, mouseY):
+    rocketL, rocketT, rocketW, rocketH=75, 400, 60, 65
+    if (rocketL<=mouseX<=rocketL+rocketW and
+        rocketT<=mouseY<=rocketT+rocketH):
+        if app.rocketsOwned==0: 
+            app.notEnoughPowerUps=True
+            return 
+        else: 
+            app.notEnoughPowerUps=False
+            app.rocketSelected=True
+            return 
+    if app.rocketSelected:
+        activateRocket(app, mouseX, mouseY)
+        app.rocketSelected = False
+    torpedoL, torpedoT, torpedoW, torpedoH=262, 400, 60, 65
+    if (torpedoL<=mouseX<=torpedoL+torpedoW and
+        torpedoT<=mouseY<=torpedoT+torpedoH):
+        if app.torpedoesOwned==0: 
+            app.notEnoughPowerUps=True
+            return 
+        else: 
+            app.notEnoughPowerUps=False
+            app.torpedoSelected=True
+            return 
+    if app.torpedoSelected:
+        activateTorpedo(app, mouseX, mouseY)
+        app.torpedoSelected = False
 
-def onAppStart(app): 
+def regular_onAppStart(app): 
     app.rows=4
     app.cols=4
     app.boardLeft = 75
-    app.boardTop = 70
+    app.boardTop = 90
     app.boardWidth = 250
     app.boardHeight = 300
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
-    app.highestScore=0
+    app.win=False
     app.mode='Regular'
     app.score=0
     app.paused=False
     app.playerMove=False
-    app.rocketsOwned = 0
-    app.torpedoesOwned = 0
+    app.rocketsOwned=0
+    app.torpedoesOwned=0
+    app.notEnoughPowerUps=False
     loadTileColor(app)
     loadPiece(app)
     loadPiece(app)
-
 
 def loadTileValue(app): 
     valList=[]
@@ -120,7 +159,6 @@ def loadTileColor(app):
             color='red'
             opacity=30*(i-8)
         app.valueColor[val]=[color, opacity]
-
 
 def loadPiece(app): 
     emptyCells=[]
@@ -279,26 +317,6 @@ def checkGameOver(app):
         app.gameOver=True
         app.highestScore = max(app.highestScore, app.score)
 
-def game_onMousePress(app, mouseX, mouseY): 
-    rocketL, rocketT, rocketW, rocketH=75, 400, 60, 65
-    if (rocketL<=mouseX<=rocketL+rocketW and
-        rocketT<=mouseY<=rocketT+rocketH):
-        app.rocketSelected = True
-        print("Rocket selected")
-        return      
-    if app.rocketSelected:
-        activateRocket(app, mouseX, mouseY)
-        app.rocketSelected = False
-    torpedoL, torpedoT, torpedoW, torpedoH=262, 400, 60, 65
-    if (torpedoL<=mouseX<=torpedoL+torpedoW and
-        torpedoT<=mouseY<=torpedoT+torpedoH):
-        app.torpedoSelected = True
-        print("Torpedo selected")
-        return      
-    if app.torpedoSelected:
-        activateTorpedo(app, mouseX, mouseY)
-        app.torpedoSelected = False
-
 def activateRocket(app, mouseX, mouseY): 
     for row in range(app.rows): 
         for col in range(app.cols):
@@ -309,6 +327,7 @@ def activateRocket(app, mouseX, mouseY):
                 rocket=Rocket(col)
                 rocket.use(app)
                 app.rocketSelected = False 
+                app.rocketsOwned-=1
 
 def activateTorpedo(app, mouseX, mouseY): 
     for row in range(app.rows):
@@ -319,8 +338,17 @@ def activateTorpedo(app, mouseX, mouseY):
                 cellTop <= mouseY <= cellTop + cellHeight):
                 torpedoPowerUp = Torpedo(row) 
                 torpedoPowerUp.use(app)
-                print(f"Torpedo used on row {row}")
+                app.torpedoSelected = False 
+                app.torpedoesOwned-=1
                 return
+
+def checkWin(app): 
+    for row in range(app.rows): 
+        for col in range(app.cols): 
+            if app.board[row][col]==2048: 
+                app.win=True
+                app.highestScore = max(app.highestScore, app.score)
+    return False
 
 ############################################################
 # Blitz Screen
@@ -331,7 +359,20 @@ def blitz_onScreenActivate(app):
     app.counter=0
 
 def blitz_redrawAll(app):
-    game_redrawAll(app)
+    drawBoard(app)
+    drawBoardBorder(app)
+    drawLabel(f'Mode: {app.mode}', 200, 20, size=18)
+    drawLabel(f'Score: {app.score}', 200, 40, size=16)
+    drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 60, size=16)
+    if app.gameOver: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('Game Over', 200, 200, size=70, bold=True, fill='red')
+        drawLabel("Press 'r' to restart", 200, 240, size=30, fill='red', bold=True)
+        drawLabel(f'Historical Highest Score: {app.highestScore}', 200, 260, size=16, fill='red', bold=True)
+    if app.paused: 
+        drawRect(0, 0, app.width, app.height, fill='black', opacity=50)
+        drawLabel('Paused', 200, 200, size=70, bold=True, fill='red')
+        drawLabel("Press 'space' to unpause", 200, 240, size=30, fill='red', bold=True)
     drawLabel(f'Time left: {app.timer}s', 200, 80, size=14)
 
 def blitz_onKeyPress(app, key):
@@ -350,19 +391,24 @@ def blitz_onKeyPress(app, key):
     checkGameOver(app)
     if app.gameOver:
           if key=='r':
-              onAppStart(app)
+              blitz_onAppStart(app)
               return 
     elif key=='space': 
          app.paused=not(app.paused)
+    if key == 'r':
+        setActiveScreen('regular')
+        app.mode='Regular'
+    elif key == 's':
+        setActiveScreen('shop')
 
-def blitz_onMousePress(app): 
-    if 400 <= mouseX <= 490:
-        if 10 <= mouseY <= 40:
-            setActiveScreen('main')
-        elif 50 <= mouseY <= 80:
-            setActiveScreen('shop')
+def blitz_onMousePress(app, mouseX, mouseY): 
+    if 0<=mouseX<=0+100 and 0<=mouseY<=0+50: 
+        setActiveScreen('start')
+    if 300<=mouseX<=300+100 and 0<=mouseY<=0+50: 
+        setActiveScreen('shop')
 
-def onAppStart(app): 
+
+def blitz_onAppStart(app): 
     app.rows=4
     app.cols=4
     app.boardLeft = 75
@@ -372,7 +418,6 @@ def onAppStart(app):
     app.cellBorderWidth = 2
     app.board = [([None] * app.cols) for row in range(app.rows)]
     app.gameOver=False
-    app.highestScore=0
     app.mode='Blitz'
     app.score=0
     app.paused=False
@@ -454,6 +499,7 @@ def shop_redrawAll(app):
     drawLabel('Torpedo price: 100', 250, 330, size=20)
     drawRect(30, 350, 100, 50, fill='orange', opacity=60)
     drawLabel('Buy', 80, 375, size=20)
+    drawLabel(f'Coins: {app.coins}', 250, 450, bold=True)
     if app.notEnoughCoins: 
         drawLabel('Not enough coins!', 250, 30, size=24, bold=True)
 
@@ -472,7 +518,15 @@ def shop_onMousePress(app, mouseX, mouseY):
         if app.coins<100: 
                 app.notEnoughCoins=True
         else: 
-            app.rocketsOwned += 1
+            app.torpedoesOwned += 1
             app.coins -= 100
+
+def shop_onKeyPress(app, key): 
+    if key == 'r':
+        setActiveScreen('regular')
+        app.mode='Regular'
+    elif key == 'b':
+        setActiveScreen('blitz')
+        app.mode='Blitz'
 
 runAppWithScreens(initialScreen='start', height=500)
